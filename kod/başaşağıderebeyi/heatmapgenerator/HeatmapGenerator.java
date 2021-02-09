@@ -21,8 +21,14 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 	
 	/** Start of the program. */
 	public static void main(final String[] args) {
-		final HeatmapGenerator engine = new HeatmapGenerator();
-		engine.start();
+		try {
+			final HeatmapGenerator engine = new HeatmapGenerator();
+			engine.start();
+		} catch (final Exception e) {
+			e.printStackTrace();
+		} finally {
+			System.exit(0);
+		}
 	}
 	
 	/** The frame on the screen. */
@@ -154,7 +160,7 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 			final float temp = temperatures[i];
 			final float d = temp - mid;
 			if (d < 0.0F) {
-				final float avg = (float)(-d / lower);
+				final float avg = -d / lower;
 				final float inv = 1 - avg;
 				for (int j = 0; j < 3; j++) {
 					rgb[j] = Math.max(Math.min(
@@ -162,7 +168,7 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 							0);
 				}
 			} else {
-				final float avg = (float)(d / upper);
+				final float avg = d / upper;
 				final float inv = 1 - avg;
 				for (int j = 0; j < 3; j++) {
 					rgb[j] = Math.max(Math.min(
@@ -174,53 +180,54 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 		}
 	}
 	
-	private int readInt(byte[] data, int pointer) {
+	private int readInt(final byte[] data, final int pointer) {
 		int temp = 0;
-		for (int i = 0; i < Integer.BYTES; i++)
+		for (int i = 0; i < Integer.BYTES; i++) {
 			temp |= data[pointer + i] << (Integer.BYTES - i - 1) * 8;
+		}
 		return temp;
 	}
 	
-	private float readFloat(byte[] data, int pointer) {
+	private float readFloat(final byte[] data, final int pointer) {
 		return Float.intBitsToFloat(readInt(data, pointer));
 	}
 	
 	private void readData() {
-		File file = new File("output.bin");
+		final File file = new File("output.bin");
 		try (FileInputStream fis = new FileInputStream(file)) {
-			long length = file.length();
+			final long length = file.length();
 			if (length > Integer.MAX_VALUE) {
 				fis.close();
-				throw new IOException("File is too big! " + (length / 1000000000.0D) + " GB");
+				throw new IOException("File is too big! " + length / 1000000000.0D + " GB");
 			}
-			byte[] data = new byte[(int)length];
+			final byte[] data = new byte[(int)length];
 			fis.read(data);
 			fis.close();
 			int pointer = 0;
-			float rowLength = readFloat(data, pointer);
+			final float rowLength = readFloat(data, pointer);
 			pointer += 4;
-			float stepSize = readFloat(data, pointer);
+			final float stepSize = readFloat(data, pointer);
 			pointer += 4;
-			dataCount = (int)Math.floor(rowLength/stepSize);
-			float rowWidth = readFloat(data, pointer);
+			dataCount = (int)Math.floor(rowLength / stepSize);
+			final float rowWidth = readFloat(data, pointer);
 			pointer += 4;
 			rowCount = readInt(data, pointer);
 			pointer += 4;
-			int turnCW = readInt(data, pointer);
+			final int turnCW = readInt(data, pointer);
 			pointer += 4;
 			System.out.println("Row Length: " + rowLength);
 			System.out.println("Step Size: " + stepSize);
 			System.out.println("Data Count: " + dataCount);
 			System.out.println("Row Width: " + rowWidth);
 			System.out.println("Turn CW: " + turnCW);
-			temperatures = new float[rowCount*dataCount];
+			temperatures = new float[rowCount * dataCount];
 			for (int j = 0; j < temperatures.length; j++) {
 				temperatures[j] = readFloat(data, pointer);
 				pointer += 4;
 			}
 		}
 		
-		catch (Exception e) {
+		catch (final Exception e) {
 			e.printStackTrace();
 		}
 	}
