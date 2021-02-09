@@ -8,15 +8,16 @@ package başaşağıderebeyi.heatmapgenerator;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
+import java.io.*;
 import java.util.*;
 
 import javax.swing.*;
 
 /** Generates a heatmap from a file. */
 public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelListener, MouseMotionListener {
-	private static final int[] midColor = new int[] { 255, 255, 0 };
-	private static final int[] minColor = new int[] { 0, 0, 200 };
-	private static final int[] maxColor = new int[] { 200, 0, 0 };
+	private static final int[] midColor = new int[] { 200, 40, 0 };
+	private static final int[] minColor = new int[] { 127, 0, 0 };
+	private static final int[] maxColor = new int[] { 255, 80, 0 };
 	
 	/** Start of the program. */
 	public static void main(final String[] args) {
@@ -35,9 +36,9 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 	/** The drawing tool. */
 	private final Graphics2D graphics;
 	
-	private final int rowCount;
-	private final int dataCount;
-	private final float[] temperatures;
+	private int rowCount;
+	private int dataCount;
+	private float[] temperatures;
 	private final Color[] colors;
 	private float xPos = 10.0F;
 	private float yPos = 10.0F;
@@ -77,13 +78,7 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 		graphics = (Graphics2D)bufferStrategy.getDrawGraphics();
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		final Random random = new Random();
-		rowCount = 10;
-		dataCount = 10;
-		temperatures = new float[rowCount * dataCount];
-		for (int i = 0; i < temperatures.length; i++) {
-			temperatures[i] = random.nextFloat();
-		}
+		readData();
 		colors = new Color[temperatures.length];
 		generateColors();
 	}
@@ -159,7 +154,7 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 			final float temp = temperatures[i];
 			final float d = temp - mid;
 			if (d < 0.0F) {
-				final float avg = (float)Math.sqrt(-d / lower);
+				final float avg = (float)(-d / lower);
 				final float inv = 1 - avg;
 				for (int j = 0; j < 3; j++) {
 					rgb[j] = Math.max(Math.min(
@@ -167,7 +162,7 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 							0);
 				}
 			} else {
-				final float avg = (float)Math.sqrt(d / upper);
+				final float avg = (float)(d / upper);
 				final float inv = 1 - avg;
 				for (int j = 0; j < 3; j++) {
 					rgb[j] = Math.max(Math.min(
@@ -176,6 +171,57 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 				}
 			}
 			colors[i] = new Color(rgb[0], rgb[1], rgb[2]);
+		}
+	}
+	
+	private int readInt(byte[] data, int pointer) {
+		int temp = 0;
+		for (int i = 0; i < Integer.BYTES; i++)
+			temp |= data[pointer + i] << (Integer.BYTES - i - 1) * 8;
+		return temp;
+	}
+	
+	private float readFloat(byte[] data, int pointer) {
+		return Float.intBitsToFloat(readInt(data, pointer));
+	}
+	
+	private void readData() {
+		File file = new File("output.bin");
+		try (FileInputStream fis = new FileInputStream(file)) {
+			long length = file.length();
+			if (length > Integer.MAX_VALUE) {
+				fis.close();
+				throw new IOException("File is too big! " + (length / 1000000000.0D) + " GB");
+			}
+			byte[] data = new byte[(int)length];
+			fis.read(data);
+			fis.close();
+			int pointer = 0;
+			float rowLength = readFloat(data, pointer);
+			pointer += 4;
+			float stepSize = readFloat(data, pointer);
+			pointer += 4;
+			dataCount = (int)Math.floor(rowLength/stepSize);
+			float rowWidth = readFloat(data, pointer);
+			pointer += 4;
+			rowCount = readInt(data, pointer);
+			pointer += 4;
+			int turnCW = readInt(data, pointer);
+			pointer += 4;
+			System.out.println("Row Length: " + rowLength);
+			System.out.println("Step Size: " + stepSize);
+			System.out.println("Data Count: " + dataCount);
+			System.out.println("Row Width: " + rowWidth);
+			System.out.println("Turn CW: " + turnCW);
+			temperatures = new float[rowCount*dataCount];
+			for (int j = 0; j < temperatures.length; j++) {
+				temperatures[j] = readFloat(data, pointer);
+				pointer += 4;
+			}
+		}
+		
+		catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	
