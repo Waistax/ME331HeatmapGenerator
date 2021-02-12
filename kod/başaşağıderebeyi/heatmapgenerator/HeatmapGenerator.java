@@ -22,8 +22,16 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 	/** Start of the program. */
 	public static void main(final String[] args) {
 		try {
-			final HeatmapGenerator engine = new HeatmapGenerator();
-			engine.start();
+			Buffer buffer = new Buffer();
+			buffer.data = new byte[20];
+			buffer
+			.writeFloat(1.0F)
+			.writeFloat(0.2F)
+			.writeFloat(0.03F)
+			.writeInt(4)
+			.writeByte((byte)0x00);
+//			final HeatmapGenerator engine = new HeatmapGenerator();
+//			engine.start();
 		} catch (final Exception e) {
 			e.printStackTrace();
 		} finally {
