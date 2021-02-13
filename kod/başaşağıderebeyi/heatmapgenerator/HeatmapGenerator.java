@@ -1,6 +1,6 @@
 /**
  * başaşağıderebeyi.heatmapgenerator.HeatmapGenerator.java
- * 0.1 / 2 Şub 2021 / 19:27:44
+ * 0.2 / 2 Şub 2021 / 19:27:44
  * Cem GEÇGEL (BaşAşağıDerebeyi)
  */
 package başaşağıderebeyi.heatmapgenerator;
@@ -10,6 +10,7 @@ import java.awt.event.*;
 import java.awt.image.*;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
 import javax.swing.*;
 
@@ -22,16 +23,8 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 	/** Start of the program. */
 	public static void main(final String[] args) {
 		try {
-			Buffer buffer = new Buffer();
-			buffer.data = new byte[20];
-			buffer
-			.writeFloat(1.0F)
-			.writeFloat(0.2F)
-			.writeFloat(0.03F)
-			.writeInt(4)
-			.writeByte((byte)0x00);
-//			final HeatmapGenerator engine = new HeatmapGenerator();
-//			engine.start();
+			final HeatmapGenerator engine = new HeatmapGenerator();
+			engine.start();
 		} catch (final Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -56,7 +49,8 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 	private final Color[] colors;
 	private float xPos = 10.0F;
 	private float yPos = 10.0F;
-	private float scale = 30.0F;
+	private float scale = 1.0F;
+	private float ratio;
 	private boolean dragged;
 	private int cursorX;
 	private int cursorY;
@@ -134,20 +128,22 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 	private void update() {
 		final int x = Math.round(xPos);
 		final int y = Math.round(yPos);
-		final int s = Math.round(scale);
+		float pixelScale = (float)Math.pow(1.2, scale);
+		final int sx = Math.round(pixelScale);
+		final int sy = Math.round(pixelScale * ratio);
 		for (int i = 0; i < rowCount; i++) {
 			for (int j = 0; j < dataCount; j++) {
 				final int index = j + i * dataCount;
 				graphics.setColor(colors[index]);
-				graphics.fillRect(x + i * s, y + j * s, s, s);
+				graphics.fillRect(x + i * sx, y + j * sy, sx, sy);
 			}
 		}
 		graphics.setColor(Color.WHITE);
 		for (int i = 0; i <= rowCount; i++) {
-			graphics.drawLine(x + i * s, y, x + i * s, y + dataCount * s);
+			graphics.drawLine(x + i * sx, y, x + i * sx, y + dataCount * sy);
 		}
 		for (int j = 0; j <= dataCount; j++) {
-			graphics.drawLine(x, y + j * s, x + rowCount * s, y + j * s);
+			graphics.drawLine(x, y + j * sy, x + rowCount * sx, y + j * sy);
 		}
 	}
 	
@@ -188,55 +184,31 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 		}
 	}
 	
-	private int readInt(final byte[] data, final int pointer) {
-		int temp = 0;
-		for (int i = 0; i < Integer.BYTES; i++) {
-			temp |= data[pointer + i] << (Integer.BYTES - i - 1) * 8;
-		}
-		return temp;
-	}
-	
-	private float readFloat(final byte[] data, final int pointer) {
-		return Float.intBitsToFloat(readInt(data, pointer));
-	}
-	
 	private void readData() {
-		final File file = new File("output.bin");
-		try (FileInputStream fis = new FileInputStream(file)) {
-			final long length = file.length();
-			if (length > Integer.MAX_VALUE) {
-				fis.close();
-				throw new IOException("File is too big! " + length / 1000000000.0D + " GB");
-			}
-			final byte[] data = new byte[(int)length];
-			fis.read(data);
-			fis.close();
-			int pointer = 0;
-			final float rowLength = readFloat(data, pointer);
-			pointer += 4;
-			final float stepSize = readFloat(data, pointer);
-			pointer += 4;
-			dataCount = (int)Math.floor(rowLength / stepSize);
-			final float rowWidth = readFloat(data, pointer);
-			pointer += 4;
-			rowCount = readInt(data, pointer);
-			pointer += 4;
-			final int turnCW = readInt(data, pointer);
-			pointer += 4;
-			System.out.println("Row Length: " + rowLength);
-			System.out.println("Step Size: " + stepSize);
-			System.out.println("Data Count: " + dataCount);
-			System.out.println("Row Width: " + rowWidth);
-			System.out.println("Turn CW: " + turnCW);
-			temperatures = new float[rowCount * dataCount];
-			for (int j = 0; j < temperatures.length; j++) {
-				temperatures[j] = readFloat(data, pointer);
-				pointer += 4;
+		List<String> lines = new ArrayList<>();
+		final File file = new File("output.txt");
+		try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+			String line;
+			while ((line = reader.readLine()) != null) {
+				lines.add(line);
 			}
 		}
-		
-		catch (final Exception e) {
+		catch (Exception e) {
 			e.printStackTrace();
+		}
+		float rowLength = Float.parseFloat(lines.get(0).substring("Row Length: ".length()));
+		float stepSize = Float.parseFloat(lines.get(1).substring("Step Size: ".length()));
+		float rowWidth = Float.parseFloat(lines.get(2).substring("Row Width: ".length()));
+		rowCount = Integer.parseInt(lines.get(3).substring("Row Count: ".length()));
+		dataCount = (int)Math.floor(rowLength / stepSize);
+		ratio = stepSize / rowWidth;
+		System.out.println("Row Length: " + rowLength);
+		System.out.println("Step Size: " + stepSize);
+		System.out.println("Data Count: " + dataCount);
+		System.out.println("Row Width: " + rowWidth);
+		temperatures = new float[rowCount*dataCount];
+		for (int i = 0; i < temperatures.length; i++) {
+			temperatures[i] = Float.parseFloat(lines.get(5+i).substring("Row: 0 | Position: 0.00 | Temperature: ".length()));
 		}
 	}
 	

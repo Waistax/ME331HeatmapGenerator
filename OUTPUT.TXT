@@ -1,0 +1,45 @@
+Row Length: 1.00
+Step Size: 0.10
+Row Width: 0.20
+Row Count: 4
+Initial Turn CCW: 1
+Row: 0 | Position: 0.00 | Temperature: 35.64
+Row: 0 | Position: 0.10 | Temperature: 34.67
+Row: 0 | Position: 0.20 | Temperature: 21.48
+Row: 0 | Position: 0.30 | Temperature: 28.81
+Row: 0 | Position: 0.40 | Temperature: 24.90
+Row: 0 | Position: 0.50 | Temperature: 19.53
+Row: 0 | Position: 0.60 | Temperature: 29.30
+Row: 0 | Position: 0.70 | Temperature: 24.41
+Row: 0 | Position: 0.80 | Temperature: 19.53
+Row: 0 | Position: 0.90 | Temperature: 26.37
+Row: 1 | Position: 0.00 | Temperature: 31.25
+Row: 1 | Position: 0.10 | Temperature: 32.23
+Row: 1 | Position: 0.20 | Temperature: 23.44
+Row: 1 | Position: 0.30 | Temperature: 29.30
+Row: 1 | Position: 0.40 | Temperature: 27.34
+Row: 1 | Position: 0.50 | Temperature: 29.30
+Row: 1 | Position: 0.60 | Temperature: 27.34
+Row: 1 | Position: 0.70 | Temperature: 25.88
+Row: 1 | Position: 0.80 | Temperature: 25.39
+Row: 1 | Position: 0.90 | Temperature: 27.83
+Row: 2 | Position: 0.00 | Temperature: 32.23
+Row: 2 | Position: 0.10 | Temperature: 23.44
+Row: 2 | Position: 0.20 | Temperature: 25.39
+Row: 2 | Position: 0.30 | Temperature: 28.32
+Row: 2 | Position: 0.40 | Temperature: 25.88
+Row: 2 | Position: 0.50 | Temperature: 27.83
+Row: 2 | Position: 0.60 | Temperature: 28.32
+Row: 2 | Position: 0.70 | Temperature: 28.32
+Row: 2 | Position: 0.80 | Temperature: 27.34
+Row: 2 | Position: 0.90 | Temperature: 28.32
+Row: 3 | Position: 0.00 | Temperature: 34.67
+Row: 3 | Position: 0.10 | Temperature: 26.37
+Row: 3 | Position: 0.20 | Temperature: 26.37
+Row: 3 | Position: 0.30 | Temperature: 26.37
+Row: 3 | Position: 0.40 | Temperature: 28.81
+Row: 3 | Position: 0.50 | Temperature: 15.63
+Row: 3 | Position: 0.60 | Temperature: 26.86
+Row: 3 | Position: 0.70 | Temperature: 30.76
+Row: 3 | Position: 0.80 | Temperature: 26.37
+Row: 3 | Position: 0.90 | Temperature: 28.32
