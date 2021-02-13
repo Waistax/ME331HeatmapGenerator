@@ -1,6 +1,6 @@
 /**
  * başaşağıderebeyi.heatmapgenerator.HeatmapGenerator.java
- * 0.2 / 2 Şub 2021 / 19:27:44
+ * 0.3 / 2 Şub 2021 / 19:27:44
  * Cem GEÇGEL (BaşAşağıDerebeyi)
  */
 package başaşağıderebeyi.heatmapgenerator;
@@ -16,9 +16,9 @@ import javax.swing.*;
 
 /** Generates a heatmap from a file. */
 public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelListener, MouseMotionListener {
-	private static final int[] midColor = new int[] { 200, 40, 0 };
-	private static final int[] minColor = new int[] { 127, 0, 0 };
-	private static final int[] maxColor = new int[] { 255, 80, 0 };
+	private static final int[] midColor = new int[] { 0, 100, 0 };
+	private static final int[] minColor = new int[] { 0, 0, 0 };
+	private static final int[] maxColor = new int[] { 255, 0, 0 };
 	
 	/** Start of the program. */
 	public static void main(final String[] args) {
@@ -49,7 +49,7 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 	private final Color[] colors;
 	private float xPos = 10.0F;
 	private float yPos = 10.0F;
-	private float scale = 1.0F;
+	private float scale = 15.0F;
 	private float ratio;
 	private boolean dragged;
 	private int cursorX;
@@ -131,11 +131,16 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 		float pixelScale = (float)Math.pow(1.2, scale);
 		final int sx = Math.round(pixelScale);
 		final int sy = Math.round(pixelScale * ratio);
+		graphics.setFont(new Font("Consolas", Font.PLAIN, sx / 8));
 		for (int i = 0; i < rowCount; i++) {
 			for (int j = 0; j < dataCount; j++) {
 				final int index = j + i * dataCount;
+				final int xpos = x + i * sx;
+				final int ypos = y + (dataCount-j-1) * sy;
 				graphics.setColor(colors[index]);
-				graphics.fillRect(x + i * sx, y + j * sy, sx, sy);
+				graphics.fillRect(xpos, ypos, sx, sy);
+				graphics.setColor(Color.WHITE);
+				graphics.drawString(""+temperatures[index], xpos + 1, ypos + sy - 1);
 			}
 		}
 		graphics.setColor(Color.WHITE);
@@ -157,28 +162,18 @@ public class HeatmapGenerator implements KeyListener, MouseListener, MouseWheelL
 			max = Math.max(temp, max);
 		}
 		final float mid = total / temperatures.length;
+		float l = max - min;
 		final int[] rgb = new int[3];
 		final float upper = max - mid;
 		final float lower = mid - min;
 		for (int i = 0; i < temperatures.length; i++) {
 			final float temp = temperatures[i];
-			final float d = temp - mid;
-			if (d < 0.0F) {
-				final float avg = -d / lower;
-				final float inv = 1 - avg;
-				for (int j = 0; j < 3; j++) {
-					rgb[j] = Math.max(Math.min(
-							Math.round(HeatmapGenerator.midColor[j] * avg + HeatmapGenerator.minColor[j] * inv), 255),
-							0);
-				}
-			} else {
-				final float avg = d / upper;
-				final float inv = 1 - avg;
-				for (int j = 0; j < 3; j++) {
-					rgb[j] = Math.max(Math.min(
-							Math.round(HeatmapGenerator.midColor[j] * avg + HeatmapGenerator.maxColor[j] * inv), 255),
-							0);
-				}
+			final float avg = (temp-min) /l;
+			final float inv = 1 - avg;
+			for (int j = 0; j < 3; j++) {
+				rgb[j] = (int)Math.max(Math.min(
+						Math.round(HeatmapGenerator.minColor[j] * inv + HeatmapGenerator.maxColor[j] * avg), 255),
+						0);
 			}
 			colors[i] = new Color(rgb[0], rgb[1], rgb[2]);
 		}
