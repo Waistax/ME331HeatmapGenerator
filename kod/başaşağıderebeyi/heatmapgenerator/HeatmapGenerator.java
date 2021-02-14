@@ -176,7 +176,7 @@ public class HeatmapGenerator implements MouseWheelListener {
 				interpolated[j] = colorRanges[lowerRange * 2][j] * inv + colorRanges[lowerRange * 2 + 1][j] * d;
 			}
 			colors[i] = new Color(colorSpace, interpolated, 1.0F);
-			textColors[i] = colors[i].getRed() + colors[i].getGreen() + colors[i].getBlue() >= 255 ? Color.BLACK
+			textColors[i] = colors[i].getRed() + colors[i].getGreen() + colors[i].getBlue() >= 300 ? Color.BLACK
 					: Color.WHITE;
 		}
 	}
